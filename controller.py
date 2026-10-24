@@ -170,4 +170,11 @@ class SentinelFlowController:
             "sanitization_notes": req.sanitization_notes,
             "action": action_payload,
             "verification": verification_payload,
+            "agents_involved": {
+                "coordinator": "SentinelFlow Coordinator Agent (ACP & UI Cards)",
+                "investigator": "SentinelFlow Investigator Agent (SIEM & Injection Defense)",
+                "analyst": "SentinelFlow Threat Analyst Agent (MITRE ATT&CK Scoring)",
+                "containment": "SentinelFlow Containment Agent (HITL Policy Gate & Response)",
+                "auditor": "SentinelFlow Auditor Agent (Closed-Loop Verification & Receipts)",
+            },
         }

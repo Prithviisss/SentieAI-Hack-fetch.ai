@@ -26,12 +26,51 @@ Most AI security solutions stop at conversation—generating theoretical advice 
 
 | Capability | Description |
 | :--- | :--- |
+| **Fetch.ai Multi-Agent Swarm (MAS)** | Decentralized swarm of 5 specialized `uAgents` collaborating via message models and Fetch.ai `Bureau`. |
 | **Agent Chat Protocol (ACP)** | Native implementation of `uagents_core.contrib.protocols.chat` with immediate message acknowledgments. |
 | **ASI:One Interactive Cards** | Dynamic, guided element-tree UI cards with threat level badges, MITRE tactic chips, and one-tap action buttons. |
 | **Zero-Hallucination SIEM Engine** | Deterministic log querying ensuring that findings reference verified, immutable log event IDs. |
 | **Indirect Prompt Injection Defense** | Sanitizes user inputs and raw ingested log fields (e.g. malicious User-Agent strings) to prevent prompt hijacking. |
 | **Closed-Loop State Verification** | Never claims containment succeeded without independently inspecting the resulting system state. |
 | **10/10 Reliability Gauntlet** | Full automated pytest suite proving resilience against tool timeouts, state mismatches, and unauthorized actions. |
+
+---
+
+## 🤖 Specialized Fetch.ai `uAgents` Swarm
+
+SentinelFlow decomposes the SecOps incident lifecycle across **5 specialized Fetch.ai agents** cooperating within a `Bureau`:
+
+```
+                           ┌───────────────────────────────┐
+                           │          ASI:One UI           │
+                           └───────────────┬───────────────┘
+                                           │ (ACP Protocol)
+                                           ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        SENTINELFLOW MULTI-AGENT SWARM (BUREAU)                        │
+│                                                                                        │
+│   ┌────────────────────────────────────────────────────────────────────────────────┐   │
+│   │              1. Coordinator Agent (ASI:One Interface & Swarm Dispatch)        │   │
+│   └──────┬───────────────────────┬───────────────────────┬──────────────────────┬──┘   │
+│          │                       │                       │                      │      │
+│          ▼                       ▼                       ▼                      ▼      │
+│   ┌──────────────┐        ┌──────────────┐        ┌──────────────┐       ┌──────────┐  │
+│   │2.Investigator│        │  3. Analyst  │        │4. Containment│       │5.Auditor │  │
+│   │    Agent     │        │    Agent     │        │    Agent     │       │  Agent   │  │
+│   │ (SIEM Search │        │(MITRE ATT&CK │        │(Policy Gate  │       │(State Ver│  │
+│   │  & Injection │        │ Risk Scoring │        │& Remediation │       │& Audit   │  │
+│   │   Defense)   │        │   0 - 100)   │        │  Execution)  │       │Receipts) │  │
+│   └──────────────┘        └──────────────┘        └──────────────┘       └──────────┘  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+| Agent Name | Fetch.ai Role | Key Responsibilities |
+| :--- | :--- | :--- |
+| **Coordinator Agent** | Orchestrator / ACP | Connects to ASI:One, parses natural intent, presents dynamic cards, dispatches tasks. |
+| **Investigator Agent** | Telemetry Specialist | Executes deterministic queries against SIEM logs, neutralizes indirect prompt injections. |
+| **Threat Analyst Agent** | Cognitive Specialist | Assesses MITRE ATT&CK tactics (Brute Force, Impossible Travel), computes risk scores (0-100). |
+| **Containment Agent** | Policy Gate Specialist | Enforces Human-In-The-Loop approval tokens, executes verified containment actions. |
+| **Auditor Agent** | Compliance Specialist | Independently validates system state post-containment, mints SHA-256 audit receipts. |
 
 ---
 

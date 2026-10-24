@@ -1,45 +1,39 @@
-"""SentinelFlow: Autonomous SecOps Incident Investigation & Verified Response Agent.
+"""SentinelFlow: Autonomous SecOps Incident Investigation & Response Multi-Agent System (MAS).
 
-Main agent entrypoint configured with Agentverse Mailbox and Agent Chat Protocol (ACP).
+Built exclusively on Fetch.ai uAgents and Agent Chat Protocol (ACP).
+Features a collaborative swarm of 5 specialized Fetch.ai agents:
+  1. Coordinator Agent  (Orchestrator & ASI:One ACP interface)
+  2. Investigator Agent (Deterministic SIEM & Telemetry search)
+  3. Threat Analyst Agent (MITRE ATT&CK Risk Scoring 0-100)
+  4. Containment Agent  (Human-in-the-Loop Policy Gate & Remediation)
+  5. Auditor Agent      (Closed-Loop State Verification & SHA-256 Receipts)
 """
 
 from __future__ import annotations
 
-import os
+import sys
 from dotenv import load_dotenv
-from uagents import Agent, Context
 
 load_dotenv()
 
-from chat_proto import chat_proto
+from agents.coordinator import coordinator_agent
+from agents.bureau import create_sentinelflow_bureau
 
-AGENT_NAME = os.getenv("AGENT_NAME", "SentinelFlow SecOps Agent")
-AGENT_SEED = os.getenv("AGENT_SEED_PHRASE", "sentinelflow-cyber-incident-agent-seed-2026")
-AGENT_PORT = int(os.getenv("AGENT_PORT", "8000"))
-USE_MAILBOX = os.getenv("AGENT_MAILBOX", "True").lower() in ("true", "1", "yes")
-
-# Initialize Agent
-agent = Agent(
-    name=AGENT_NAME,
-    seed=AGENT_SEED,
-    port=AGENT_PORT,
-    mailbox=USE_MAILBOX,
-)
-
-# Attach Agent Chat Protocol (ACP) and publish manifest for ASI:One discovery
-agent.include(chat_proto, publish_manifest=True)
-
-
-@agent.on_event("startup")
-async def startup(ctx: Context):
-    ctx.logger.info("=" * 60)
-    ctx.logger.info(f"🛡️  SentinelFlow Agent Initialized: {agent.name}")
-    ctx.logger.info(f"📍 Agent Address: {agent.address}")
-    ctx.logger.info(f"🌐 Protocol: Agent Chat Protocol (ACP) Published")
-    ctx.logger.info(f"📬 Mailbox Enabled: {USE_MAILBOX}")
-    ctx.logger.info("=" * 60)
-    ctx.logger.info("Ready to receive cybersecurity investigation tasks via ASI:One.")
-
+# Primary coordinator agent reference
+agent = coordinator_agent
 
 if __name__ == "__main__":
-    agent.run()
+    if "--standalone" in sys.argv:
+        print("🛡️  Starting SentinelFlow Coordinator Agent in Standalone mode...")
+        coordinator_agent.run()
+    else:
+        print("=" * 65)
+        print("🛡️  Starting SentinelFlow Multi-Agent System (Fetch.ai uAgents)")
+        print("   1. Coordinator Agent  -> ASI:One Interface & ACP Dispatch")
+        print("   2. Investigator Agent -> SIEM Log Search & Injection Defense")
+        print("   3. Analyst Agent      -> MITRE ATT&CK Risk Scoring (0-100)")
+        print("   4. Containment Agent  -> HITL Policy Gate & State Remediation")
+        print("   5. Auditor Agent      -> Closed-Loop State Inspection & Receipts")
+        print("=" * 65)
+        bureau = create_sentinelflow_bureau()
+        bureau.run()
