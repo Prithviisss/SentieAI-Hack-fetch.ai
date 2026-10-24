@@ -19,6 +19,11 @@ from agents.analyst import analyst_agent
 from agents.containment import containment_agent
 from agents.auditor import auditor_agent
 
+import uagents.config
+
+# Accelerate Mailbox polling to 250ms (4x faster message pickup from ASI:One)
+uagents.config.MAILBOX_POLL_INTERVAL_SECONDS = 0.25
+
 COORDINATOR_PORT = int(os.getenv("AGENT_PORT", "8000"))
 COORDINATOR_SEED = os.getenv("AGENT_SEED_PHRASE", "sentinelflow-cyber-incident-agent-seed-2026")
 USE_MAILBOX = os.getenv("AGENT_MAILBOX", "True").lower() in ("true", "1", "yes")

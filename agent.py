@@ -36,6 +36,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import uagents.config
+
+# Accelerate Mailbox polling to 250ms (4x faster message pickup from ASI:One)
+uagents.config.MAILBOX_POLL_INTERVAL_SECONDS = 0.25
+
 from agents.coordinator import coordinator_agent
 from agents.bureau import create_sentinelflow_bureau
 
