@@ -184,9 +184,16 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
 
     # Handle Welcome / Onboarding
     if action_name == "welcome":
-        welcome_preamble = """### 👋 Hi there! I'm SentinelFlow, your Personal Cyber Guardian.
+        welcome_preamble = """### 👋 Hi there! I'm SentinelFlow, your Autonomous SecOps Multi-Agent Swarm.
 
 You don't need any technical skills to protect your accounts. If something feels suspicious, just speak to me in simple English!
+
+🛡️ **Powered by 5 Specialized Fetch.ai uAgents:**
+* 🎯 **Coordinator Agent**: Frontline chat & decision orchestrator
+* 🔎 **Investigator Agent**: Searches SIEM logs & neutralizes prompt injections
+* 🧠 **Threat Analyst Agent**: Evaluates MITRE ATT&CK risk scores (0–100)
+* 🔒 **Containment Agent**: Enforces policy gates & safe 1-tap lockouts
+* 📜 **Auditor Agent**: Issues closed-loop cryptographic SHA-256 state receipts
 
 ---
 
@@ -319,6 +326,12 @@ Here is the recorded login history for your account:
 * **Execution Timestamp:** `{timestamp_str}`
 * **Action Audit ID:** `{action_id}`
 * **Fetch.ai Payment Protocol:** `{payment_status_str}`
+
+---
+
+### 👥 Multi-Agent Swarm Verification:
+* 🔒 **Containment Agent** (`agent1qwh6tqvy...`): Executed session revocation & network quarantine
+* 📜 **Auditor Agent** (`agent1qfeunnss...`): Cryptographically inspected post-action state & verified SHA-256 proof
 
 ---
 
@@ -477,6 +490,15 @@ Don't panic — SentinelFlow detected suspicious activity on your account.
 * **Target Identity:** `{target}`
 * **Investigation Window:** Past 60 minutes
 * **Triage Status:** ⚠️ Active Compromise Indicators Correlated • Pending Containment Authorization
+
+---
+
+### 👥 Fetch.ai Multi-Agent Swarm (MAS) Telemetry
+* 🎯 **Coordinator Agent** (`agent1qwstka0f7...`): Frontline chat dispatch & card orchestration
+* 🔎 **Investigator Agent** (`agent1q2g6yumc...`): Correlated SIEM telemetry & neutralized prompt injections
+* 🧠 **Threat Analyst Agent** (`agent1qfj33ut4...`): Evaluated MITRE ATT&CK rules (Score: {risk_score_val}/100)
+* 🔒 **Containment Agent** (`agent1qwh6tqvy...`): Enforcing Human-in-the-Loop policy gate
+* 📜 **Auditor Agent** (`agent1qfeunnss...`): Ready for closed-loop SHA-256 state proof verification
 
 ---
 
