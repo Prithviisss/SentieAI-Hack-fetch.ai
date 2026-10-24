@@ -19,14 +19,45 @@
 Most AI security solutions stop at conversation—generating theoretical advice that an analyst must still manually investigate and execute.
 
 **SentinelFlow** turns natural-language security intent into **autonomous, evidence-backed actions**:
-1. **Intakes intent** via ASI:One natural conversation or dynamic UI cards.
-2. **Deterministically searches SIEM and authentication logs** without fabricating records.
-3. **Applies explainable MITRE ATT&CK risk-scoring rules** (Brute Force, Impossible Travel, Privilege Escalation).
-4. **Surfaces Dual Interactive Cards** in ASI:One: **Card A (Risk Assessment)** and **Card B (Response Approval)**.
-5. **Enforces a strict Human-in-the-Loop (HITL) Policy Gate** requiring explicit approval for high-impact actions.
-6. **Executes safe, simulated containment** (e.g., revoking compromised sessions, blocking attacker IPs).
-7. **Settles containment via Fetch.ai Payment Protocol** (`0.1 FET` SECaaS micro-transaction).
-8. **Verifies the actual post-action system state** and outputs **Card C: Tamper-Evident Cryptographic SHA-256 Audit Receipt** directly inside ASI:One!
+1. **Dual-Protocol Access (ACP + MCP)**:
+   - **ACP (Agent Chat Protocol)**: Powers Fetch.ai ASI:One conversational experiences with rich, interactive UI cards (`MetadataContent`).
+   - **MCP (Model Context Protocol)**: Exposes SecOps tools over standard JSON-RPC 2.0 stdio for external LLM clients (Claude Desktop, Cursor, FastMCP).
+2. **Dual-Persona Experience**:
+   - **Real-World Consumer Mode**: Empathetic, zero-jargon plain English for everyday users ("Someone hacked my account alex@gmail.com"), 1-tap emergency rescue with 0.1 FET, and Personal Safety Certificate.
+   - **Enterprise SOC Analyst Mode**: Tier-3 SOC reports, MITRE ATT&CK correlation, and SIEM telemetry.
+3. **Deterministically searches SIEM and authentication logs** without fabricating records.
+4. **Applies explainable MITRE ATT&CK risk-scoring rules** (Brute Force, Impossible Travel, Privilege Escalation).
+5. **Surfaces Dynamic Interactive Cards Suite** in ASI:One (Risk Assessment, Response Approval, Verification Receipt, Forensics, Onboarding).
+6. **Enforces a strict Human-in-the-Loop (HITL) Policy Gate** requiring explicit approval for high-impact actions.
+7. **Executes safe, simulated containment** (e.g., revoking compromised sessions, blocking attacker IPs).
+8. **Settles containment via Fetch.ai Payment Protocol** (`0.1 FET` SECaaS micro-transaction).
+9. **Verifies the actual post-action system state** and outputs **Tamper-Evident Cryptographic SHA-256 Audit Receipt** directly inside ASI:One!
+
+---
+
+## 🔌 Dual-Protocol Architecture: ACP + MCP
+
+SentinelFlow bridges the decentralized Fetch.ai ecosystem with the broader AI tooling standard:
+
+```
+                      ┌──────────────────────────────────────────────┐
+                      │            SentinelFlow Core Engine          │
+                      │  (Controller, SIEM Search, MITRE Evaluator,  │
+                      │   HITL Policy Gate, Closed-Loop Verifier)    │
+                      └───────────────┬──────────────┬───────────────┘
+                                      │              │
+                   Agent Chat Protocol│              │Model Context Protocol
+                         (ACP)        │              │       (MCP)
+                                      ▼              ▼
+                     ┌───────────────────┐        ┌────────────────────┐
+                     │ ASI:One / Chat UI │        │ Claude / Cursor /  │
+                     │  Interactive Cards│        │ IDE Tool Calling   │
+                     │  (MetadataContent)│        │   (JSON-RPC 2.0)   │
+                     └───────────────────┘        └────────────────────┘
+```
+
+- **Agent Chat Protocol (ACP)**: Connects to Fetch.ai's decentralized agent network and ASI:One chat UI via Agentverse Mailbox. Delivers conversational replies and interactive UI cards (`agent.py`, `chat_proto.py`, `cards.py`).
+- **Model Context Protocol (MCP)**: Exposes `investigate_security_logins`, `emergency_account_lockdown`, and `verify_containment_proof` as standardized MCP tools for Claude Desktop, Cursor, or IDE agents (`mcp_server.py`).
 
 ---
 
@@ -137,9 +168,9 @@ Ready to receive cybersecurity investigation tasks via ASI:One.
 
 ---
 
-## 🧪 Running the F-ups Reliability Gauntlet (12/12 Tests)
+## 🧪 Running the F-ups Reliability Gauntlet (18/18 Tests)
 
-SentinelFlow includes an automated test suite verifying every critical edge case:
+SentinelFlow includes a comprehensive automated test suite verifying every critical edge case across ACP, MCP, payment, security, and consumer protection:
 
 ```bash
 pytest -v
@@ -158,6 +189,12 @@ pytest -v
 - `T10. ASI:One Dynamic Cards & Selection Parsing`: **PASSED** (Validates Cards A, B, C, D, E & button parsing)
 - `T11. Fetch.ai Payment Protocol Spec`: **PASSED** (Verifies Funds schema and seller role)
 - `T12. Multi-Agent A2A Collaboration`: **PASSED** (Verifies ContainmentTask and ContainmentResult schemas)
+- `T13. Real-World Consumer Emergency Lockdown`: **PASSED** (Natural language hack reports, 1-tap lock, and Safety Certificate)
+- `T14. MCP Server Handshake & Ping`: **PASSED** (Validates MCP 2024-11-05 initialize protocol)
+- `T15. MCP Tool Enumeration`: **PASSED** (Lists investigate, lockdown, and verify tools with JSON schemas)
+- `T16. MCP Investigation Execution`: **PASSED** (Runs telemetry investigation via JSON-RPC 2.0 stdio)
+- `T17. MCP Containment & Proof Verification`: **PASSED** (Executes lockdown and verifies SHA-256 state hash)
+- `T18. MCP Error Handling`: **PASSED** (Safely handles unknown methods and malformed tool calls)
 
 ---
 
