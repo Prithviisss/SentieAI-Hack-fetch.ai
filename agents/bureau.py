@@ -3,6 +3,20 @@
 from __future__ import annotations
 
 import os
+import sys
+
+# Ensure UTF-8 output on Windows consoles
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,7 +31,8 @@ from agents.auditor import auditor_agent
 
 def create_sentinelflow_bureau() -> Bureau:
     """Initialize Fetch.ai Bureau with all 5 specialized SecOps agents."""
-    bureau_port = int(os.getenv("BUREAU_PORT", "8000"))
+    # Use explicit BUREAU_PORT only if configured; otherwise avoid port collision with coordinator
+    bureau_port = int(os.getenv("BUREAU_PORT")) if os.getenv("BUREAU_PORT") else None
     bureau = Bureau(port=bureau_port)
 
     # 1. Frontline SecOps Orchestrator Agent (interfaces with ASI:One via ACP)

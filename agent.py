@@ -14,6 +14,18 @@ from __future__ import annotations
 import sys
 import asyncio
 
+# Ensure UTF-8 output on Windows consoles
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # Ensure active event loop on MainThread for Python 3.12+ compatibility
 try:
     asyncio.get_event_loop()
