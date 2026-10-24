@@ -58,7 +58,15 @@ def test_t09_idempotency_duplicate_containment():
 
 def test_t10_asi_one_interactive_cards_and_parsing():
     """T10: Validate ASI:One dynamic card schema structure and selection parsing."""
-    card = build_risk_assessment_card(
+    from cards import (
+        build_response_approval_card,
+        build_verification_receipt_card,
+        build_forensic_details_card,
+        build_welcome_card,
+    )
+
+    # 1. Card A (Risk Assessment)
+    card_a = build_risk_assessment_card(
         target="demo-user-104",
         risk_level="high",
         risk_score=85,
@@ -66,22 +74,126 @@ def test_t10_asi_one_interactive_cards_and_parsing():
         mitre_tactics=["T1110 - Brute Force"],
         summary="Suspicious burst detected.",
     )
-    assert "root" in card
-    assert card["root"]["type"] == "section"
-    assert len(card["root"]["children"]) > 0
+    assert "root" in card_a
+    assert card_a["root"]["type"] == "section"
+    assert len(card_a["root"]["children"]) > 0
 
-    # Test card button selection parsing
+    # 2. Card B (Response Approval)
+    card_b = build_response_approval_card(
+        target="demo-user-104",
+        risk_level="critical",
+        proposed_action="revoke_user_sessions",
+        fee="0.1 FET",
+    )
+    assert "root" in card_b
+    assert card_b["root"]["type"] == "section"
+    # Verify presence of interactive decision buttons
+    buttons = [
+        child for child in card_b["root"]["children"]
+        if child.get("type") == "group" and any(c.get("type") == "button" for c in child.get("children", []))
+    ]
+    assert len(buttons) > 0
+
+    # 3. Card C (Verification Receipt)
+    card_c = build_verification_receipt_card(
+        action_id="act-test-01",
+        target="demo-user-104",
+        action_type="revoke_user_sessions",
+        actual_state="sessions_revoked",
+        audit_hash="a"*64,
+        timestamp="2026-10-24T12:00:00Z",
+    )
+    assert "root" in card_c
+
+    # 4. Card D (Forensics) & Card E (Welcome)
+    card_d = build_forensic_details_card(target="demo-user-104", risk_score=85, evidence=["Signal 1"])
+    assert "root" in card_d
+    card_e = build_welcome_card()
+    assert "root" in card_e
+
+    # 5. Format 1: Structured JSON button click parsing
     raw_button_click = json.dumps({
-        "action": "approve_containment",
-        "target": "demo-user-104",
-        "action_type": "revoke_user_sessions",
-        "token": "CARD_ACTION_APPROVE",
+        "selection": {
+            "action": "approve_containment",
+            "target": "demo-user-104",
+            "action_type": "revoke_user_sessions",
+            "token": "CARD_ACTION_APPROVE",
+            "fee": "0.1 FET",
+        }
     })
-    parsed = parse_card_selection(raw_button_click)
-    assert parsed is not None
-    assert parsed["action"] == "approve_containment"
-    assert parsed["target"] == "demo-user-104"
+    parsed_json = parse_card_selection(raw_button_click)
+    assert parsed_json is not None
+    assert parsed_json["action"] == "approve_containment"
+    assert parsed_json["target"] == "demo-user-104"
+    assert parsed_json["action_type"] == "revoke_user_sessions"
 
-    # Test target regex extractor
+    # 6. Format 2: Natural Language text parsing
+    p_approve = parse_card_selection("Approve session revocation")
+    assert p_approve is not None and p_approve["action"] == "approve_containment"
+
+    p_reject = parse_card_selection("Reject the action")
+    assert p_reject is not None and p_reject["action"] == "dismiss_incident"
+
+    p_info = parse_card_selection("Request more information")
+    assert p_info is not None and p_info["action"] == "request_more_info"
+
+    p_block = parse_card_selection("Block attacker IP")
+    assert p_block is not None and p_block["action_type"] == "block_ip_address"
+
+    # 7. Target regex extractor
     extracted = extract_target_from_text("Please investigate suspicious events on demo-user-104 immediately")
     assert extracted == "demo-user-104"
+
+
+def test_t13_consumer_emergency_lock_and_email_flow():
+    """T13: Validate Real-World Consumer 'Emergency Lock' Mode with arbitrary email and 0.1 FET."""
+    from cards import (
+        build_consumer_alert_card,
+        build_consumer_lockdown_card,
+        build_consumer_safety_certificate_card,
+    )
+    from tools.log_search import search_logs
+
+    # 1. Arbitrary consumer email query parsing
+    consumer_input = "Someone hacked my account alex@gmail.com please help"
+    parsed = parse_card_selection(consumer_input)
+    assert parsed is not None
+    assert parsed["action"] == "investigate_target"
+    assert parsed["target"] == "alex@gmail.com"
+    assert parsed["mode"] == "consumer"
+
+    # 2. Dynamic consumer log telemetry lookup
+    telemetry = search_logs(account_id="alex@gmail.com")
+    assert telemetry["matches_found"] > 0
+    assert any("Lagos, Nigeria" in str(evt.get("location")) for evt in telemetry["events"])
+
+    # 3. Consumer Card builders
+    alert_card = build_consumer_alert_card(target="alex@gmail.com", risk_score=85)
+    assert "root" in alert_card
+    assert alert_card["root"]["title"] == "🚨 Account Security Alert"
+
+    lockdown_card = build_consumer_lockdown_card(target="alex@gmail.com", fee="0.1 FET (~$0.12)")
+    assert "root" in lockdown_card
+    assert lockdown_card["root"]["title"] == "🛡️ 1-Tap Emergency Account Lockdown"
+
+    cert_card = build_consumer_safety_certificate_card(
+        target="alex@gmail.com",
+        action_id="act-consumer-01",
+        audit_hash="f"*64,
+        timestamp="2026-10-24T12:00:00Z",
+    )
+    assert "root" in cert_card
+    assert cert_card["root"]["title"] == "✅ Account Successfully Secured!"
+
+    # 4. Consumer 1-tap lock input parsing
+    lock_click = parse_card_selection("Lock my account now")
+    assert lock_click is not None
+    assert lock_click["action"] == "approve_containment"
+    assert lock_click["mode"] == "consumer"
+
+    # 5. Consumer "It was me" parsing
+    safe_click = parse_card_selection("It was me")
+    assert safe_click is not None
+    assert safe_click["action"] == "it_was_me"
+
+
