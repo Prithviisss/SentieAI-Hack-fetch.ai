@@ -64,7 +64,13 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
     ctx.logger.info(f"Received ACP message from {sender}")
 
     # 1. Immediate Protocol Acknowledgment
-    await ctx.send(sender, ChatAcknowledgement(timestamp=ctx.agent.time))
+    await ctx.send(
+        sender,
+        ChatAcknowledgement(
+            timestamp=datetime.now(timezone.utc),
+            acknowledged_msg_id=msg.msg_id,
+        ),
+    )
 
     # 2. Extract incoming text content
     inbound_text = ""
@@ -189,3 +195,10 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
         summary=result.get("summary", ""),
     )
     await ctx.send(sender, reply)
+
+
+@chat_proto.on_message(model=ChatAcknowledgement)
+async def handle_acknowledgement(ctx: Context, sender: str, msg: ChatAcknowledgement):
+    """Handle delivery acknowledgments from ASI:One or interacting agents."""
+    ctx.logger.info(f"Received delivery acknowledgment from {sender} for message {msg.acknowledged_msg_id}")
+
