@@ -28,10 +28,12 @@ Most AI security solutions stop at conversation—generating theoretical advice 
 | :--- | :--- |
 | **Agent Chat Protocol (ACP)** | Native implementation of `uagents_core.contrib.protocols.chat` with immediate message acknowledgments. |
 | **ASI:One Interactive Cards** | Dynamic, guided element-tree UI cards with threat level badges, MITRE tactic chips, and one-tap action buttons. |
+| **Multi-Agent Collaboration** | Decentralized A2A delegation between Triage Agent (Agent 1) and Remediation/Escrow Agent (Agent 2). |
+| **Payment Protocol (0.1 FET)** | Monetization via Fetch.ai Payment Protocol (`payment_protocol_spec`, seller role) charging 0.1 FET for verified containment. |
 | **Zero-Hallucination SIEM Engine** | Deterministic log querying ensuring that findings reference verified, immutable log event IDs. |
 | **Indirect Prompt Injection Defense** | Sanitizes user inputs and raw ingested log fields (e.g. malicious User-Agent strings) to prevent prompt hijacking. |
 | **Closed-Loop State Verification** | Never claims containment succeeded without independently inspecting the resulting system state. |
-| **10/10 Reliability Gauntlet** | Full automated pytest suite proving resilience against tool timeouts, state mismatches, and unauthorized actions. |
+| **12/12 Reliability Gauntlet** | Full automated pytest suite proving resilience against tool timeouts, state mismatches, payments, and unauthorized actions. |
 
 ---
 

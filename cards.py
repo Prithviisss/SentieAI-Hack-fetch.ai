@@ -108,7 +108,7 @@ def build_risk_assessment_card(
                 "children": [
                     {
                         "type": "button",
-                        "label": "Approve Session Revocation",
+                        "label": "Approve Session Revocation (0.1 FET)",
                         "primary": True,
                         "action": {
                             "selection": {
@@ -116,13 +116,14 @@ def build_risk_assessment_card(
                                 "target": target,
                                 "action_type": "revoke_user_sessions",
                                 "token": "CARD_ACTION_APPROVE",
+                                "fee": "0.1 FET",
                                 "source": SENTINELFLOW_SOURCE,
                             }
                         },
                     },
                     {
                         "type": "button",
-                        "label": "Block Attacker IP (198.51.100.42)",
+                        "label": "Block Attacker IP (0.1 FET)",
                         "primary": False,
                         "action": {
                             "selection": {
@@ -130,6 +131,7 @@ def build_risk_assessment_card(
                                 "target": "198.51.100.42",
                                 "action_type": "block_ip_address",
                                 "token": "CARD_ACTION_APPROVE",
+                                "fee": "0.1 FET",
                                 "source": SENTINELFLOW_SOURCE,
                             }
                         },
@@ -161,6 +163,7 @@ def build_verification_receipt_card(
     actual_state: str,
     audit_hash: str,
     timestamp: str,
+    payment_status: str = "0.1 FET Settled (Fetch.ai Escrow)",
 ) -> dict[str, Any]:
     """Generate post-containment verified receipt card with cryptographic SHA-256 hash."""
     section: dict[str, Any] = {
@@ -169,9 +172,21 @@ def build_verification_receipt_card(
         "subtitle": f"Action ID: {action_id}",
         "children": [
             {
-                "type": "badge",
-                "label": "STATUS: VERIFIED & AUDITED",
-                "variant": "success",
+                "type": "group",
+                "direction": "row",
+                "gap": 8,
+                "children": [
+                    {
+                        "type": "badge",
+                        "label": "STATUS: VERIFIED & AUDITED",
+                        "variant": "success",
+                    },
+                    {
+                        "type": "badge",
+                        "label": payment_status,
+                        "variant": "info",
+                    },
+                ],
             },
             {
                 "type": "group",
@@ -182,6 +197,7 @@ def build_verification_receipt_card(
                     {"type": "text", "value": f"Target: {target}", "style": "body"},
                     {"type": "text", "value": f"Post-Remediation State: {actual_state}", "style": "body"},
                     {"type": "text", "value": f"Execution Timestamp: {timestamp}", "style": "muted"},
+                    {"type": "text", "value": f"Payment Protocol: {payment_status}", "style": "muted"},
                 ],
             },
             {"type": "divider"},
@@ -236,6 +252,7 @@ def build_verification_message(
     actual_state: str,
     audit_hash: str,
     timestamp: str,
+    payment_status: str = "0.1 FET Settled (Fetch.ai Escrow)",
 ) -> ChatMessage:
     """Create ChatMessage with text preamble and verified audit card."""
     card_dict = build_verification_receipt_card(
@@ -245,6 +262,7 @@ def build_verification_message(
         actual_state=actual_state,
         audit_hash=audit_hash,
         timestamp=timestamp,
+        payment_status=payment_status,
     )
     return ChatMessage(
         timestamp=datetime.now(timezone.utc),
