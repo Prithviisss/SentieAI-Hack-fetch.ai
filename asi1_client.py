@@ -1,0 +1,131 @@
+"""ASI:One LLM client for SentinelFlow.
+
+Leverages the ASI:One chat completions API (model: asi1-mini / asi1) to synthesize
+executive incident briefings and analyst preambles while grounding all statements
+strictly in deterministic log evidence.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import os
+from typing import Any
+
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ASI_ONE_API_KEY = (os.getenv("ASI_ONE_API_KEY") or os.getenv("ASI1_API_KEY") or "").strip()
+ASI_ONE_MODEL = os.getenv("ASI_ONE_MODEL", "asi1-mini")
+ASI_ONE_CHAT_URL = "https://api.asi1.ai/v1/chat/completions"
+
+
+def _chat_completion(messages: list[dict[str, str]], *, max_tokens: int = 250) -> str | None:
+    """Synchronous helper that performs a single chat-completion call to ASI:One."""
+    if not ASI_ONE_API_KEY:
+        return None
+
+    headers = {
+        "Authorization": f"Bearer {ASI_ONE_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload: dict[str, Any] = {
+        "model": ASI_ONE_MODEL,
+        "messages": messages,
+        "temperature": 0.3,
+        "max_tokens": max_tokens,
+        "stream": False,
+    }
+
+    try:
+        resp = requests.post(ASI_ONE_CHAT_URL, json=payload, headers=headers, timeout=15)
+        if not resp.ok:
+            return None
+        data = resp.json()
+        choices = data.get("choices") or []
+        if not choices:
+            return None
+        return (choices[0].get("message") or {}).get("content")
+    except Exception:
+        return None
+
+
+async def craft_analyst_briefing(
+    target: str,
+    risk_level: str,
+    risk_score: int,
+    evidence: list[str],
+    mitre_tactics: list[str],
+) -> str:
+    """Generate an executive security briefing grounded strictly in evidence."""
+    fallback = (
+        f"Incident assessment for {target}: Risk {risk_level.upper()} (Score {risk_score}/100). "
+        f"Correlated {len(evidence)} suspicious indicators across authentication and access events."
+    )
+
+    if not ASI_ONE_API_KEY:
+        return fallback
+
+    evidence_text = "\n".join(f"- {e}" for e in evidence)
+    mitre_text = ", ".join(mitre_tactics) or "None"
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are SentinelFlow, an elite autonomous SecOps triage agent. "
+                "Write a concise executive briefing (2-3 sentences, under 60 words) summarizing the threat. "
+                "Do NOT invent unobserved facts. Mention the primary attack vector and recommend containment."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Target Account: {target}\n"
+                f"Risk Level: {risk_level.upper()} (Score: {risk_score}/100)\n"
+                f"MITRE ATT&CK: {mitre_text}\n"
+                f"Observed Evidence:\n{evidence_text}\n\n"
+                "Provide the executive briefing."
+            ),
+        },
+    ]
+
+    result = await asyncio.to_thread(_chat_completion, messages, max_tokens=150)
+    if not result:
+        return fallback
+
+    cleaned = result.strip().strip('"').strip()
+    return cleaned or fallback
+
+
+async def craft_investigation_preamble(target: str, risk_level: str, risk_score: int) -> str:
+    """Generate concise preamble intro line above the interactive card."""
+    fallback = (
+        f"SentinelFlow analyzed authentication and SIEM records for **{target}**. "
+        f"Risk Level: **{risk_level.upper()}** (Score: {risk_score}/100). "
+        "Review the evidence and select an authorized response below:"
+    )
+
+    if not ASI_ONE_API_KEY:
+        return fallback
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an incident response agent. Write a single intro sentence (<25 words) "
+                "informing the analyst that triage is complete and prompting review of the interactive card."
+            ),
+        },
+        {
+            "role": "user",
+            "content": f"Target: {target}, Risk Level: {risk_level.upper()}, Score: {risk_score}/100. Write the intro sentence.",
+        },
+    ]
+
+    result = await asyncio.to_thread(_chat_completion, messages, max_tokens=60)
+    if not result:
+        return fallback
+
+    return result.strip().strip('"').strip() or fallback

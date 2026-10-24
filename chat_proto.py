@@ -20,6 +20,7 @@ from cards import (
     build_verification_message,
 )
 from controller import SentinelFlowController
+from asi1_client import craft_analyst_briefing, craft_investigation_preamble
 
 chat_proto = Protocol(spec=chat_protocol_spec)
 controller = SentinelFlowController()
@@ -178,11 +179,18 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
         await ctx.send(sender, reply)
         return
 
-    # 5. Return rich Interactive Risk Assessment Card
-    preamble = (
-        f"SentinelFlow analyzed authentication and SIEM records for **{target}**. "
-        f"Risk Level: **{str(result.get('risk_level')).upper()}** (Score: {result.get('risk_score')}/100). "
-        "Review the evidence and select an authorized response below:"
+    # 5. Return rich Interactive Risk Assessment Card with ASI:One LLM briefing
+    briefing = await craft_analyst_briefing(
+        target=target,
+        risk_level=result.get("risk_level", "medium"),
+        risk_score=result.get("risk_score", 50),
+        evidence=result.get("evidence", []),
+        mitre_tactics=result.get("mitre_tactics", []),
+    )
+    preamble = await craft_investigation_preamble(
+        target=target,
+        risk_level=result.get("risk_level", "medium"),
+        risk_score=result.get("risk_score", 50),
     )
 
     reply = build_risk_assessment_message(
@@ -192,7 +200,7 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
         risk_score=result.get("risk_score", 50),
         evidence=result.get("evidence", []),
         mitre_tactics=result.get("mitre_tactics", []),
-        summary=result.get("summary", ""),
+        summary=briefing,
     )
     await ctx.send(sender, reply)
 
