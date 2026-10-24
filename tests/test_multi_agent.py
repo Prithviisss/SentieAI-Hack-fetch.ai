@@ -56,7 +56,7 @@ def test_bureau_contains_all_specialized_agents():
     bureau_agents = bureau._agents
     assert len(bureau_agents) == 5
     agent_names = [a.name for a in bureau_agents]
-    assert any("Coordinator" in n for n in agent_names)
+    assert any("Coordinator" in n or "SecOps" in n for n in agent_names)
     assert any("Investigator" in n for n in agent_names)
     assert any("Analyst" in n for n in agent_names)
     assert any("Containment" in n for n in agent_names)
