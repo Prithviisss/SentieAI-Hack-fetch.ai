@@ -13,7 +13,7 @@ load_dotenv()
 
 from chat_proto import chat_proto
 
-AGENT_NAME = os.getenv("AGENT_NAME", "SentinelFlow Incident Response Agent")
+AGENT_NAME = os.getenv("AGENT_NAME", "SentinelFlow SecOps Agent")
 AGENT_SEED = os.getenv("AGENT_SEED_PHRASE", "sentinelflow-cyber-incident-agent-seed-2026")
 AGENT_PORT = int(os.getenv("AGENT_PORT", "8000"))
 USE_MAILBOX = os.getenv("AGENT_MAILBOX", "True").lower() in ("true", "1", "yes")
