@@ -102,9 +102,14 @@ def parse_card_selection(text: str) -> dict[str, Any] | None:
         }
 
     # 3. Approve session revocation / Consumer Emergency Lockdown
-    if any(kw in lower for kw in ("lock my account", "lock down", "emergency lock", "approve session revocation", "approve containment", "approve", "revoke", "kick out", "yes, revoke", "authorize", "confirm")) or re.search(r"\block\b", lower):
+    # Accepts casual natural language commands like "lock", "lock it", "do it", "yes", "kick them out", "ok"
+    if any(kw in lower for kw in (
+        "lock my account", "lock down", "emergency lock", "approve session revocation",
+        "approve containment", "approve", "revoke", "kick out", "yes, revoke",
+        "authorize", "confirm", "lock it", "do it", "stop them", "kick them", "kick them out"
+    )) or re.search(r"\b(lock|yes|yep|yeah|ok|okay)\b", lower):
         target_found = extract_target_from_text(stripped)
-        is_consumer = any(w in lower for w in ("my account", "emergency", "lock my", "kick out", "hack", "stole"))
+        is_consumer = any(w in lower for w in ("my account", "emergency", "lock my", "kick out", "hack", "stole", "lock it", "do it", "stop", "yes", "ok"))
         return {
             "action": "approve_containment",
             "target": target_found,
@@ -114,13 +119,13 @@ def parse_card_selection(text: str) -> dict[str, Any] | None:
             "mode": "consumer" if is_consumer else "soc",
         }
 
-    # 4. Consumer "It was me" dismissal
-    if any(kw in lower for kw in ("it was me", "that was me", "safe", "false alarm", "my login")):
+    # 4. Consumer "It was me" dismissal / Rejection
+    if any(kw in lower for kw in ("it was me", "that was me", "safe", "false alarm", "my login", "ignore", "all good")) or re.search(r"\b(no|nope|me)\b", lower):
         target_found = extract_target_from_text(stripped)
         return {"action": "it_was_me", "target": target_found}
 
-    # 5. Request more information / Forensics
-    if any(kw in lower for kw in ("more info", "request more info", "request more information", "forensic", "details", "raw logs", "show logs", "login history")):
+    # 5. Request more information / Forensics / History
+    if any(kw in lower for kw in ("more info", "request more info", "request more information", "forensic", "details", "raw logs", "show logs", "login history", "history")) or re.search(r"\b(details|info|more|history)\b", lower):
         target_found = extract_target_from_text(stripped)
         return {"action": "request_more_info", "target": target_found}
 
@@ -129,9 +134,8 @@ def parse_card_selection(text: str) -> dict[str, Any] | None:
         target_found = extract_target_from_text(stripped)
         return {"action": "dismiss_incident", "target": target_found}
 
-
     # 7. Help / Greeting / Onboarding (Only when not preceded by a high-intent query)
-    if any(re.search(rf"\b{greeting}\b", lower) for greeting in ("hello", "hi", "hey", "help", "start")) or any(q in lower for q in ("who are you", "what can you do")):
+    if any(re.search(rf"\b{greeting}\b", lower) for greeting in ("hello", "hi", "hey", "help", "start")) or any(q in lower for q in ("who are you", "what can you do", "what to type")):
         return {"action": "welcome"}
 
     return None
@@ -180,16 +184,19 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
 
     # Handle Welcome / Onboarding
     if action_name == "welcome":
-        welcome_preamble = """### 🛡️ SentinelFlow Personal Cyber Guardian Online
-Welcome! I am **SentinelFlow**, your autonomous AI security concierge built on **Fetch.ai** and **ASI:One**.
+        welcome_preamble = """### 👋 Hi there! I'm SentinelFlow, your Personal Cyber Guardian.
 
-**How I Protect You in the Real World:**
-* 🚨 **Instant Breach & Hack Detection**: Say *"I think I got hacked"* or enter your email (e.g. `alex@gmail.com`).
-* ⚡ **1-Tap Emergency Lockdown**: Disconnect unauthorized hackers across all devices in seconds.
-* 💰 **On-Demand Pay-per-Rescue**: Powered by Fetch.ai Payment Protocol (`0.1 FET`, ~$0.12) only when an emergency rescue is executed (no monthly fees).
-* 🔐 **Verifiable Cryptographic Proof**: Issues a SHA-256 safety certificate confirming your account is locked down.
+You don't need any technical skills to protect your accounts. If something feels suspicious, just speak to me in simple English!
 
-Select an option below or type your email to begin:"""
+---
+
+### 💡 Here is what you can type right now:
+* 💬 Type: **"I got hacked"** — to scan your account for unauthorized logins
+* 💬 Type: **"Check alex@gmail.com"** — to scan any specific email address
+* 💬 Type: **"Lock it"** — to immediately disconnect any active intruders (0.1 FET)
+* 💬 Type: **"Details"** — to view your recent login history
+
+👇 Or simply tap one of the quick buttons below:"""
         await ctx.send(sender, build_welcome_message(welcome_preamble))
         return
 
@@ -203,7 +210,9 @@ Select an option below or type your email to begin:"""
             content=[
                 TextContent(
                     type="text",
-                    text=f"Phew! Glad to hear that was you, {target}. The security alert has been safely dismissed with zero action taken. Your account remains safe!",
+                    text=f"""Phew! Glad to hear that was you, {target}. The security alert has been safely dismissed with zero action taken. Your account remains safe!
+
+💡 **Need anything else?** Type **"Check my account"** anytime or type **"Help"**.""",
                 )
             ],
         )
@@ -221,13 +230,18 @@ Select an option below or type your email to begin:"""
             raw_events = []
 
         forensic_preamble = f"""### 🔍 Security Activity History: `{target}`
-Below is the recorded authentication audit trail:
+Here is the recorded login history for your account:
 
 * **Target Account:** `{target}`
 * **Records Correlated:** `{len(raw_events)} events`
 * **Signals:** Rapid brute-force burst, impossible travel velocity (>800 km/h), multiple MFA challenge prompts.
 
-You can proceed with emergency lockdown below:"""
+---
+
+### 💡 What you can type right now:
+* 💬 Type **"Lock it"** — to immediately kick out the intruder (0.1 FET)
+* 💬 Type **"It was me"** — if that login was just you
+* 💬 Type **"Help"** — to return to main menu"""
 
         reply = build_forensic_details_message(
             preamble=forensic_preamble,
@@ -280,7 +294,11 @@ You can proceed with emergency lockdown below:"""
 * **Fetch.ai Payment Protocol:** `{fee} (~$0.12)` settled via decentralized escrow
 * **Cryptographic Proof (SHA-256):** `{audit_hash}`
 
-👉 **Next Step:** You can now safely log back in and change your password from your personal trusted device!"""
+---
+
+### 💡 What you can do next:
+* 💬 Type **"Check my account"** — to run a fresh scan anytime
+* 💬 Type **"Help"** — to see other ways I can protect you"""
 
                 reply = build_consumer_safety_certificate_message(
                     preamble=consumer_verify_preamble,
@@ -415,7 +433,12 @@ Don't panic — SentinelFlow detected suspicious activity on your account.
 * **Intruder Device:** `Linux / Unauthorized Browser (198.51.100.42)`
 * **Threat Score:** **CRITICAL ({risk_score_val}/100)**
 
-Review the alert in **Card A** below, then use **Card B (1-Tap Emergency Lockdown)** to immediately kick out the intruder!"""
+---
+
+### 💡 What would you like to do? (Just type one of these):
+* 💬 Type **"Lock it"** (or tap the button below) — to immediately kick out the intruder (0.1 FET)
+* 💬 Type **"It was me"** — if that was just you using a VPN or traveling
+* 💬 Type **"Details"** — to see the full login history and IP address"""
 
         card_a_consumer = build_consumer_alert_message(
             preamble=consumer_alert_preamble,
@@ -428,10 +451,10 @@ Review the alert in **Card A** below, then use **Card B (1-Tap Emergency Lockdow
         await ctx.send(sender, card_a_consumer)
 
         consumer_lockdown_preamble = f"""### 🛡️ 1-Tap Emergency Account Lockdown
-**Proposed Rescue:** Invalidate all active sessions for `{target}` and quarantine intruder IP.
-**SECaaS Fee:** `0.1 FET (~$0.12)` (Fetch.ai Payment Protocol)
+**Action:** Disconnect all active sessions for `{target}` and quarantine intruder IP.
+**Cost:** `0.1 FET (~$0.12)` (Fetch.ai Payment Protocol)
 
-Tap **Lock My Account Now** to immediately disconnect the intruder:"""
+👉 **To execute:** Tap **Lock My Account Now** below or reply **"Lock it"**!"""
 
         card_b_consumer = build_consumer_lockdown_message(
             preamble=consumer_lockdown_preamble,

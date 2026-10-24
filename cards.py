@@ -497,13 +497,13 @@ def build_welcome_card() -> dict[str, Any]:
                     {"type": "text", "value": "🧠 MITRE ATT&CK Threat Scoring: Mathematical formula scoring credential stuffing & impossible travel.", "style": "body"},
                     {"type": "text", "value": "⚡ Dual-Card Interactive Approval: Inspect Card A (Risk Assessment) & Card B (Response Approval).", "style": "body"},
                     {"type": "text", "value": "💰 Fetch.ai Payment Protocol: Micro-settlements at 0.1 FET per remediation action.", "style": "body"},
-                    {"type": "text", "value": "🔐 Cryptographic SHA-256 Receipts: State verification proof saved to immutable audit ledger.", "style": "body"},
+                    {"type": "text", "value": "🔐 Cryptographic Safety Receipts: Verifiable SHA-256 proof that your account was rescued.", "style": "body"},
                 ],
             },
             {"type": "divider"},
             {
                 "type": "heading",
-                "value": "Quick Launch Demo Scenarios",
+                "value": "Try It in 1 Tap (Or Type Below)",
                 "level": 4,
             },
             {
@@ -513,24 +513,42 @@ def build_welcome_card() -> dict[str, Any]:
                 "children": [
                     {
                         "type": "button",
-                        "label": "Investigate demo-user-104 (Critical Alert)",
+                        "label": "🚨 Scan My Account (Emergency)",
                         "primary": True,
                         "action": {
                             "selection": {
                                 "action": "investigate_target",
                                 "target": "demo-user-104",
+                                "mode": "consumer",
                                 "source": SENTINELFLOW_SOURCE,
                             }
                         },
                     },
                     {
                         "type": "button",
-                        "label": "Investigate sarah-dev-92 (Benign Baseline)",
+                        "label": "🔒 Lock Account (0.1 FET)",
+                        "primary": False,
+                        "action": {
+                            "selection": {
+                                "action": "approve_containment",
+                                "target": "demo-user-104",
+                                "action_type": "revoke_user_sessions",
+                                "token": "CARD_ACTION_APPROVE",
+                                "fee": "0.1 FET",
+                                "mode": "consumer",
+                                "source": SENTINELFLOW_SOURCE,
+                            }
+                        },
+                    },
+                    {
+                        "type": "button",
+                        "label": "🔍 Check Safe Account",
                         "primary": False,
                         "action": {
                             "selection": {
                                 "action": "investigate_target",
                                 "target": "sarah-dev-92",
+                                "mode": "consumer",
                                 "source": SENTINELFLOW_SOURCE,
                             }
                         },
