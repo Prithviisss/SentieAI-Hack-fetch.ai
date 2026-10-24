@@ -12,6 +12,14 @@ Features a collaborative swarm of 5 specialized Fetch.ai agents:
 from __future__ import annotations
 
 import sys
+import asyncio
+
+# Ensure active event loop on MainThread for Python 3.12+ compatibility
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
 from dotenv import load_dotenv
 
 load_dotenv()

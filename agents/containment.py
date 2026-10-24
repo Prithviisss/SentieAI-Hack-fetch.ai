@@ -3,6 +3,14 @@
 from __future__ import annotations
 
 import os
+import asyncio
+
+# Ensure active event loop for Python 3.12+
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
 from uagents import Agent, Context
 
 from agents.models import ContainmentActionRequest, ContainmentActionResponse
