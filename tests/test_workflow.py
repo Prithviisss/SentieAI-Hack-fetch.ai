@@ -140,10 +140,60 @@ def test_t10_asi_one_interactive_cards_and_parsing():
     p_block = parse_card_selection("Block attacker IP")
     assert p_block is not None and p_block["action_type"] == "block_ip_address"
 
-    p_hello = parse_card_selection("Hello")
-    assert p_hello is not None and p_hello["action"] == "welcome"
-
     # 7. Target regex extractor
     extracted = extract_target_from_text("Please investigate suspicious events on demo-user-104 immediately")
     assert extracted == "demo-user-104"
+
+
+def test_t13_consumer_emergency_lock_and_email_flow():
+    """T13: Validate Real-World Consumer 'Emergency Lock' Mode with arbitrary email and 0.1 FET."""
+    from cards import (
+        build_consumer_alert_card,
+        build_consumer_lockdown_card,
+        build_consumer_safety_certificate_card,
+    )
+    from tools.log_search import search_logs
+
+    # 1. Arbitrary consumer email query parsing
+    consumer_input = "Someone hacked my account alex@gmail.com please help"
+    parsed = parse_card_selection(consumer_input)
+    assert parsed is not None
+    assert parsed["action"] == "investigate_target"
+    assert parsed["target"] == "alex@gmail.com"
+    assert parsed["mode"] == "consumer"
+
+    # 2. Dynamic consumer log telemetry lookup
+    telemetry = search_logs(account_id="alex@gmail.com")
+    assert telemetry["matches_found"] > 0
+    assert any("Lagos, Nigeria" in str(evt.get("location")) for evt in telemetry["events"])
+
+    # 3. Consumer Card builders
+    alert_card = build_consumer_alert_card(target="alex@gmail.com", risk_score=85)
+    assert "root" in alert_card
+    assert alert_card["root"]["title"] == "🚨 Account Security Alert"
+
+    lockdown_card = build_consumer_lockdown_card(target="alex@gmail.com", fee="0.1 FET (~$0.12)")
+    assert "root" in lockdown_card
+    assert lockdown_card["root"]["title"] == "🛡️ 1-Tap Emergency Account Lockdown"
+
+    cert_card = build_consumer_safety_certificate_card(
+        target="alex@gmail.com",
+        action_id="act-consumer-01",
+        audit_hash="f"*64,
+        timestamp="2026-10-24T12:00:00Z",
+    )
+    assert "root" in cert_card
+    assert cert_card["root"]["title"] == "✅ Account Successfully Secured!"
+
+    # 4. Consumer 1-tap lock input parsing
+    lock_click = parse_card_selection("Lock my account now")
+    assert lock_click is not None
+    assert lock_click["action"] == "approve_containment"
+    assert lock_click["mode"] == "consumer"
+
+    # 5. Consumer "It was me" parsing
+    safe_click = parse_card_selection("It was me")
+    assert safe_click is not None
+    assert safe_click["action"] == "it_was_me"
+
 

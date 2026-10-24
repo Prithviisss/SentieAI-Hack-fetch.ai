@@ -663,3 +663,312 @@ def build_welcome_message(preamble: str) -> ChatMessage:
             _card_metadata(card_dict, card_kind="custom"),
         ],
     )
+
+
+# =====================================================================
+# REAL-WORLD CONSUMER "EMERGENCY LOCK" CARDS SUITE
+# =====================================================================
+
+def build_consumer_alert_card(
+    target: str,
+    risk_score: int = 85,
+    location: str = "Lagos, Nigeria",
+    device: str = "Linux / Unauthorized Browser",
+    summary: str | None = None,
+) -> dict[str, Any]:
+    """Generate Card: Consumer Account Security Alert (Plain English, Zero Jargon)."""
+    default_summary = (
+        f"Someone just logged into your account ({target}) from an unknown device in {location}. "
+        "They attempted to enter your password 5 times in 12 seconds before gaining access."
+    )
+    section: dict[str, Any] = {
+        "type": "section",
+        "title": "🚨 Account Security Alert",
+        "subtitle": f"Unauthorized access detected for {target}",
+        "children": [
+            {
+                "type": "group",
+                "direction": "row",
+                "gap": 8,
+                "children": [
+                    {"type": "badge", "label": "CRITICAL THREAT", "variant": "error"},
+                    {"type": "badge", "label": f"LOCATION: {location.upper()}", "variant": "warning"},
+                    {"type": "badge", "label": f"DANGER SCORE: {risk_score}/100", "variant": "info"},
+                ],
+            },
+            {
+                "type": "heading",
+                "value": "What Happened?",
+                "level": 3,
+            },
+            {
+                "type": "text",
+                "value": summary or default_summary,
+                "style": "body",
+            },
+            {"type": "divider"},
+            {
+                "type": "heading",
+                "value": "Suspicious Login Details",
+                "level": 4,
+            },
+            {
+                "type": "group",
+                "direction": "column",
+                "gap": 4,
+                "children": [
+                    {"type": "text", "value": f"• Protected Account: {target}", "style": "body"},
+                    {"type": "text", "value": f"• Intruder Location: {location}", "style": "body"},
+                    {"type": "text", "value": f"• Intruder Device: {device}", "style": "body"},
+                    {"type": "text", "value": "• Your Normal Location: San Francisco, USA", "style": "muted"},
+                ],
+            },
+            {"type": "divider"},
+            {
+                "type": "heading",
+                "value": "Recommended Immediate Action",
+                "level": 4,
+            },
+            {
+                "type": "text",
+                "value": "Don't worry — SentinelFlow can terminate all unauthorized sessions and lock the intruder out immediately.",
+                "style": "body",
+            },
+        ],
+    }
+    return {"root": section}
+
+
+def build_consumer_lockdown_card(
+    target: str,
+    fee: str = "0.1 FET (~$0.12)",
+) -> dict[str, Any]:
+    """Generate Card: 1-Tap Emergency Account Lockdown (Consumer Pay-per-Rescue)."""
+    section: dict[str, Any] = {
+        "type": "section",
+        "title": "🛡️ 1-Tap Emergency Account Lockdown",
+        "subtitle": f"Kick out intruders and secure {target}",
+        "children": [
+            {
+                "type": "group",
+                "direction": "row",
+                "gap": 8,
+                "children": [
+                    {"type": "badge", "label": "1-TAP RESCUE", "variant": "success"},
+                    {"type": "badge", "label": f"FEE: {fee}", "variant": "info"},
+                    {"type": "badge", "label": "INSTANT PROTECTION", "variant": "default"},
+                ],
+            },
+            {
+                "type": "heading",
+                "value": "What Lockdown Will Do",
+                "level": 3,
+            },
+            {
+                "type": "group",
+                "direction": "column",
+                "gap": 4,
+                "children": [
+                    {"type": "text", "value": "✅ Instantly terminates all active logins on all phones, laptops, and web browsers.", "style": "body"},
+                    {"type": "text", "value": "✅ Locks out the intruder immediately so they can no longer access your data.", "style": "body"},
+                    {"type": "text", "value": "✅ Blocks the attacker's IP address (198.51.100.42) from attempting further logins.", "style": "body"},
+                    {"type": "text", "value": f"✅ Decentralized Fetch.ai micro-fee ({fee}) charged only on successful rescue.", "style": "muted"},
+                ],
+            },
+            {"type": "divider"},
+            {
+                "type": "heading",
+                "value": "Choose Action",
+                "level": 4,
+            },
+            {
+                "type": "group",
+                "direction": "row",
+                "gap": 8,
+                "children": [
+                    {
+                        "type": "button",
+                        "label": f"Lock My Account Now ({fee})",
+                        "primary": True,
+                        "action": {
+                            "selection": {
+                                "action": "approve_containment",
+                                "target": target,
+                                "action_type": "revoke_user_sessions",
+                                "token": "CARD_ACTION_APPROVE",
+                                "fee": "0.1 FET",
+                                "mode": "consumer",
+                                "source": SENTINELFLOW_SOURCE,
+                            }
+                        },
+                    },
+                    {
+                        "type": "button",
+                        "label": "It Was Me (Safe)",
+                        "primary": False,
+                        "action": {
+                            "selection": {
+                                "action": "it_was_me",
+                                "target": target,
+                                "source": SENTINELFLOW_SOURCE,
+                            }
+                        },
+                    },
+                    {
+                        "type": "button",
+                        "label": "Show Login Details",
+                        "primary": False,
+                        "action": {
+                            "selection": {
+                                "action": "request_more_info",
+                                "target": target,
+                                "source": SENTINELFLOW_SOURCE,
+                            }
+                        },
+                    },
+                ],
+            },
+        ],
+    }
+    return {"root": section}
+
+
+def build_consumer_safety_certificate_card(
+    target: str,
+    action_id: str,
+    audit_hash: str,
+    timestamp: str,
+    fee: str = "0.1 FET (~$0.12)",
+) -> dict[str, Any]:
+    """Generate Card: Personal Safety Certificate & Verification Receipt for everyday users."""
+    section: dict[str, Any] = {
+        "type": "section",
+        "title": "✅ Account Successfully Secured!",
+        "subtitle": f"Protection Certificate • {target}",
+        "children": [
+            {
+                "type": "group",
+                "direction": "row",
+                "gap": 8,
+                "children": [
+                    {"type": "badge", "label": "STATUS: SECURED & SAFE", "variant": "success"},
+                    {"type": "badge", "label": f"{fee} Settled", "variant": "info"},
+                    {"type": "badge", "label": "0 INTRUDERS REMAINING", "variant": "default"},
+                ],
+            },
+            {
+                "type": "heading",
+                "value": "Rescue Summary",
+                "level": 3,
+            },
+            {
+                "type": "group",
+                "direction": "column",
+                "gap": 4,
+                "children": [
+                    {"type": "text", "value": f"• Target Account: {target}", "style": "body"},
+                    {"type": "text", "value": "• Active Sessions: All disconnected (intruder in Lagos kicked out)", "style": "body"},
+                    {"type": "text", "value": "• Ingress Quarantine: Attacker IP 198.51.100.42 blocked", "style": "body"},
+                    {"type": "text", "value": f"• Timestamp: {timestamp}", "style": "muted"},
+                ],
+            },
+            {"type": "divider"},
+            {
+                "type": "heading",
+                "value": "Cryptographic Safety Proof (SHA-256)",
+                "level": 4,
+            },
+            {
+                "type": "text",
+                "value": audit_hash,
+                "style": "code",
+            },
+            {"type": "divider"},
+            {
+                "type": "heading",
+                "value": "Important Next Steps For You",
+                "level": 4,
+            },
+            {
+                "type": "group",
+                "direction": "column",
+                "gap": 4,
+                "children": [
+                    {"type": "text", "value": "1. Change your password right now from your personal trusted device.", "style": "body"},
+                    {"type": "text", "value": "2. Enable Two-Factor Authentication (2FA) using an authenticator app.", "style": "body"},
+                    {"type": "text", "value": "3. Do not reuse old passwords across multiple accounts.", "style": "muted"},
+                ],
+            },
+        ],
+    }
+    return {"root": section}
+
+
+def build_consumer_alert_message(
+    preamble: str,
+    target: str,
+    risk_score: int = 85,
+    location: str = "Lagos, Nigeria",
+    device: str = "Linux / Unauthorized Browser",
+    summary: str | None = None,
+) -> ChatMessage:
+    """Create ChatMessage with Consumer Alert Card."""
+    card_dict = build_consumer_alert_card(
+        target=target,
+        risk_score=risk_score,
+        location=location,
+        device=device,
+        summary=summary,
+    )
+    return ChatMessage(
+        timestamp=datetime.now(timezone.utc),
+        msg_id=uuid4(),
+        content=[
+            TextContent(type="text", text=preamble),
+            _card_metadata(card_dict, card_kind="custom"),
+        ],
+    )
+
+
+def build_consumer_lockdown_message(
+    preamble: str,
+    target: str,
+    fee: str = "0.1 FET (~$0.12)",
+) -> ChatMessage:
+    """Create ChatMessage with Consumer Lockdown Card."""
+    card_dict = build_consumer_lockdown_card(target=target, fee=fee)
+    return ChatMessage(
+        timestamp=datetime.now(timezone.utc),
+        msg_id=uuid4(),
+        content=[
+            TextContent(type="text", text=preamble),
+            _card_metadata(card_dict, card_kind="review"),
+        ],
+    )
+
+
+def build_consumer_safety_certificate_message(
+    preamble: str,
+    target: str,
+    action_id: str,
+    audit_hash: str,
+    timestamp: str,
+    fee: str = "0.1 FET (~$0.12)",
+) -> ChatMessage:
+    """Create ChatMessage with Consumer Safety Certificate."""
+    card_dict = build_consumer_safety_certificate_card(
+        target=target,
+        action_id=action_id,
+        audit_hash=audit_hash,
+        timestamp=timestamp,
+        fee=fee,
+    )
+    return ChatMessage(
+        timestamp=datetime.now(timezone.utc),
+        msg_id=uuid4(),
+        content=[
+            TextContent(type="text", text=preamble),
+            _card_metadata(card_dict, card_kind="custom"),
+        ],
+    )
+
